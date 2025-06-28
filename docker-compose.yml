@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  mcp-hub:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "37373:37373" # Map container port 37373 to host port 37373
+    volumes:
+      - ./mcp-servers.json:/app/mcp-servers.json # Mount the config file
+    command: ["node", "dist/cli.js", "--port", "37373", "--config", "/app/mcp-servers.json"] # Pass arguments to mcp-hub
+    restart: unless-stopped
