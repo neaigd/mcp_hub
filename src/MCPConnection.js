@@ -92,6 +92,8 @@ export class MCPConnection extends EventEmitter {
     this.authorizationUrl = null;
     this.hubServerUrl = hubServerUrl;
     this.serverInfo = null; // Will store server's reported name/version
+    this.healthCheckIntervalId = null;
+    this.healthCheckInterval = config.healthCheckInterval || 10000; // Default to 10 seconds
 
     // Initialize dev watcher for stdio servers with dev config
     if (this.transportType === 'stdio' && config.dev) {
@@ -231,6 +233,7 @@ export class MCPConnection extends EventEmitter {
       }
 
       logger.info(`'${this.name}' MCP server connected`);
+      this._startHealthCheck(); // Start health check after successful connection
     } catch (error) {
       // Ensure proper cleanup on error
       await this.disconnect(error.message);
@@ -576,6 +579,7 @@ export class MCPConnection extends EventEmitter {
 
   async disconnect(error) {
     this.removeNotificationHandlers();
+    this._stopHealthCheck(); // Stop health check on disconnect
 
     // Stop dev watcher
     if (this.devWatcher) {
@@ -836,6 +840,45 @@ export class MCPConnection extends EventEmitter {
     this.status = ConnectionStatus.CONNECTING;
     // Reconnect with same config
     await this.connect(currentConfig);
+  }
+
+  _startHealthCheck() {
+    if (this.healthCheckIntervalId) {
+      clearInterval(this.healthCheckIntervalId);
+    }
+    this.healthCheckIntervalId = setInterval(async () => {
+      await this._performHealthCheck();
+    }, this.healthCheckInterval);
+    logger.debug(`Health check started for server '${this.name}' with interval ${this.healthCheckInterval}ms`);
+  }
+
+  _stopHealthCheck() {
+    if (this.healthCheckIntervalId) {
+      clearInterval(this.healthCheckIntervalId);
+      this.healthCheckIntervalId = null;
+      logger.debug(`Health check stopped for server '${this.name}'`);
+    }
+  }
+
+  async _performHealthCheck() {
+    if (this.status !== ConnectionStatus.CONNECTED) {
+      return; // Only perform health check if currently connected
+    }
+    try {
+      // Attempt a simple request to check connectivity
+      await this.client.request({ method: "tools/list" }, ListToolsResultSchema);
+      this.error = null; // Clear any previous errors
+    } catch (error) {
+      logger.warn(`Health check failed for server '${this.name}': ${error.message}`);
+      this.status = ConnectionStatus.DISCONNECTED;
+      this.error = `MCP error: ${error.message}`;
+      this._stopHealthCheck(); // Stop health check on failure
+      this.emit("connectionClosed", {
+        server: this.name,
+        type: this.transportType,
+        error: this.error,
+      });
+    }
   }
 }
 
