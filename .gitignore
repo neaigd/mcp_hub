@@ -1,6 +1,2 @@
-# Arquivos de configuração local e gerados
-config.yaml
-mcp-hub.service
 
-# Diretórios temporários para repositórios clonados
-temp_repos/
+/examples/echo-server.js
