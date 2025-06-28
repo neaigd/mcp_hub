@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.8.0] - 2025-06-28
+
+### Added
+
+- **Persistência de Volumes Docker**: Configurado `docker-compose.yml` para usar volumes nomeados para cache, logs e armazenamento OAuth, garantindo persistência de dados.
+- **Templating para Serviço Systemd**: Implementada abordagem de templating (`mcp-hub.service.template`, `config.yaml`, `generate_systemd_service.py`) para configuração flexível do serviço `systemd`.
+- **Workflow de Segurança GitHub Actions**: Adicionado `security-scan.yml` para `npm audit` em pushes e pull requests.
+- **Gerenciamento de Repositórios Temporários**: Adicionado `temp_repos/` ao `.gitignore`.
+- **Ambiente Virtual Python**: Criado `.venv` e instalado `pyyaml` para scripts Python.
+
+### Changed
+
+- **Organização de Tarefas**: Criadas e atualizadas diversas issues no GitHub para rastrear o progresso do projeto (incluindo instalador, suporte multiplataforma, UI web e verificação de saúde de servidores).
+
+### Fixed
+
+- **Visibilidade do Repositório**: Verificado que o repositório é público.
+
 ## [3.7.0] - 2025-06-26
 
 ### Added
@@ -514,6 +532,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - API documentation
 - Example implementations
 - Test suite with high coverage
-
-
-

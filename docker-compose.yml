@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   mcp-hub:
     build:
@@ -9,5 +7,13 @@ services:
       - "37373:37373" # Map container port 37373 to host port 37373
     volumes:
       - ./mcp-servers.json:/app/mcp-servers.json # Mount the config file
+      - mcp_hub_cache:/home/node/.local/share/mcp-hub/cache
+      - mcp_hub_logs:/home/node/.local/state/mcp-hub/logs
+      - mcp_hub_oauth_storage:/home/node/.local/share/mcp-hub/oauth-storage.json
     command: ["node", "dist/cli.js", "--port", "37373", "--config", "/app/mcp-servers.json"] # Pass arguments to mcp-hub
     restart: unless-stopped
+
+volumes:
+  mcp_hub_cache:
+  mcp_hub_logs:
+  mcp_hub_oauth_storage:
